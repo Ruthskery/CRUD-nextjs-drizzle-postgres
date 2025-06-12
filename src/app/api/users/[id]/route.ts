@@ -26,12 +26,14 @@ export async function DELETE(
 }
 
 // PUT (update) user by ID
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+type ParamsContext = {
+  params: { id: string };
+};
+
+export async function PUT(request: Request, context: ParamsContext) {
+  const { id } = context.params;
   try {
-    const id = parseInt(params.id);
+    const parsedId = parseInt(id);
     const body = await request.json();
 
     const [updatedUser] = await db.update(users)
@@ -40,7 +42,7 @@ export async function PUT(
         age: body.age,
         email: body.email,
       })
-      .where(eq(users.id, id))
+      .where(eq(users.id, parsedId))
       .returning();
 
     if (!updatedUser) {
@@ -53,3 +55,4 @@ export async function PUT(
     return NextResponse.json({ error: 'Failed to update user' }, { status: 500 });
   }
 }
+
